@@ -1,4 +1,4 @@
-import { Server, Model, Serializer } from "miragejs";
+import {Server, Model, Serializer, hasMany, belongsTo} from "miragejs";
 
 describe("External | Shared | Serializers | Base | Attrs List", function () {
   let server;
@@ -6,7 +6,12 @@ describe("External | Shared | Serializers | Base | Attrs List", function () {
   beforeEach(function () {
     server = new Server({
       models: {
-        wordSmith: Model,
+        wordSmith: Model.extend({
+          blogPosts: hasMany(),
+        }),
+        blogPost: Model.extend({
+          wordSmith: belongsTo(),
+        }),
       },
       serializers: {
         application: Serializer,
