@@ -1,6 +1,6 @@
 import {Server, Model, Serializer, hasMany, belongsTo} from "miragejs";
 
-describe("External | Shared | Serializers | Base | Attrs Object", function () {
+describe("External | Shared | Serializers | Base | Transforms", function () {
   let server;
 
   beforeEach(function () {
@@ -29,7 +29,7 @@ describe("External | Shared | Serializers | Base | Attrs Object", function () {
     server.serializerOrRegistry.registerSerializers({
       wordSmith: Serializer.extend({
         serializeIds: "always",
-        attrs: {
+        transforms: {
           name: "externalName",
         }
       }),
@@ -58,7 +58,7 @@ describe("External | Shared | Serializers | Base | Attrs Object", function () {
     server.serializerOrRegistry.registerSerializers({
       wordSmith: Serializer.extend({
         serializeIds: "always",
-        attrs: {
+        transforms: {
           name: "externalName",
         }
       }),
@@ -82,7 +82,7 @@ describe("External | Shared | Serializers | Base | Attrs Object", function () {
     server.serializerOrRegistry.registerSerializers({
       wordSmith: Serializer.extend({
         serializeIds: "always",
-        attrs: {
+        transforms: {
           address: {key: "addressId"},
           name: {key: "externalName"}
         },
@@ -120,5 +120,48 @@ describe("External | Shared | Serializers | Base | Attrs Object", function () {
 
   });
 
+  test(`it serializes the relations as embedded`, () => {
+    server.serializerOrRegistry.registerSerializers({
+      wordSmith: Serializer.extend({
+        serializeIds: "always",
+        transforms: {
+          address: {key: "addressId"},
+          blogPost: {serialize: "records"},
+          name: {key: "externalName"}
+        },
+      }),
+    });
+
+    let address = server.schema.addresses.create({
+      id: 11,
+      street: "123 Maple",
+    });
+
+    let wordSmith = server.schema.wordSmiths.create({
+      id: 1,
+      name: "Link",
+      age: 123,
+      address: address,
+    });
+
+    let blogPost = server.schema.blogPosts.create({
+      id: 2,
+      wordSmith: wordSmith
+    });
+
+    debugger;
+    let result = server.serializerOrRegistry.serialize(wordSmith);
+
+    expect(result).toEqual({
+      wordSmith: {
+        age: 123,
+        blogPostIds: [{id: 2, wordsmith: "1"}],
+        addressId: "11",
+        id: "1",
+        externalName: "Link",
+      },
+    });
+
+  });
 
 });
