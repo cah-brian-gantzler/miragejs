@@ -78,12 +78,12 @@ describe("External | Shared | Serializers | Base | Transforms", function () {
     });
   });
 
-  test(`it serializes the relations as IDs by default`, () => {
+  test(`it serializes the relations as embedded when specified`, () => {
     server.serializerOrRegistry.registerSerializers({
       wordSmith: Serializer.extend({
         serializeIds: "always",
         transforms: {
-          address: {key: "addressId"},
+          address: {serialize: "records"},
           name: {key: "externalName"}
         },
       }),
@@ -112,51 +112,7 @@ describe("External | Shared | Serializers | Base | Transforms", function () {
       wordSmith: {
         age: 123,
         blogPostIds: ["2"],
-        addressId: "11",
-        id: "1",
-        externalName: "Link",
-      },
-    });
-
-  });
-
-  test(`it serializes the relations as embedded`, () => {
-    server.serializerOrRegistry.registerSerializers({
-      wordSmith: Serializer.extend({
-        serializeIds: "always",
-        transforms: {
-          address: {key: "addressId"},
-          blogPost: {serialize: "records"},
-          name: {key: "externalName"}
-        },
-      }),
-    });
-
-    let address = server.schema.addresses.create({
-      id: 11,
-      street: "123 Maple",
-    });
-
-    let wordSmith = server.schema.wordSmiths.create({
-      id: 1,
-      name: "Link",
-      age: 123,
-      address: address,
-    });
-
-    let blogPost = server.schema.blogPosts.create({
-      id: 2,
-      wordSmith: wordSmith
-    });
-
-    debugger;
-    let result = server.serializerOrRegistry.serialize(wordSmith);
-
-    expect(result).toEqual({
-      wordSmith: {
-        age: 123,
-        blogPostIds: [{id: 2, wordsmith: "1"}],
-        addressId: "11",
+        address: {id: "11", street: "123 Maple"},
         id: "1",
         externalName: "Link",
       },
